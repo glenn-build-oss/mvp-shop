@@ -29,10 +29,23 @@ class ShopApp {
 
     loadData() {
         const savedProducts = localStorage.getItem('products');
+        const backupProducts = sessionStorage.getItem('products_backup');
         const savedOrders = localStorage.getItem('orders');
+        const backupOrders = sessionStorage.getItem('orders_backup');
         
         if (savedProducts) {
             this.products = JSON.parse(savedProducts);
+            console.log('Loaded products from localStorage');
+        } else if (backupProducts) {
+            this.products = JSON.parse(backupProducts);
+            console.log('Loaded products from sessionStorage backup');
+            // Restore to localStorage
+            localStorage.setItem('products', backupProducts);
+        } else {
+            console.log('No saved products found, using defaults');
+        }
+        
+        if (this.products.length > 0) {
             // Migrate old product structure to new structure
             this.products = this.products.map(product => {
                 if (!product.mediaType) {
@@ -82,21 +95,33 @@ class ShopApp {
         
         if (savedOrders) {
             this.orders = JSON.parse(savedOrders);
+            console.log('Loaded orders from localStorage');
+        } else if (backupOrders) {
+            this.orders = JSON.parse(backupOrders);
+            console.log('Loaded orders from sessionStorage backup');
+            // Restore to localStorage
+            localStorage.setItem('orders', backupOrders);
+        } else {
+            console.log('No saved orders found, using defaults');
+            this.orders = [];
+        }
+        
+        if (this.orders.length > 0) {
             // Migrate old order structure to new structure
             this.orders = this.orders.map(order => {
-                if (order.customerName && order.customerPhone && order.customerAddress) {
+                if (!order.customer) {
                     // Old structure - migrate to new structure
                     return {
                         id: order.id,
                         customer: {
-                            name: order.customerName,
-                            phone: order.customerPhone,
-                            address: order.customerAddress
+                            name: order.name || 'Unknown',
+                            phone: order.phone || 'Not provided',
+                            address: order.address || 'Not provided'
                         },
                         items: order.items || [],
                         total: order.total || 0,
                         status: order.status || 'pending',
-                        paymentScreenshotNumber: order.paymentScreenshotNumber || order.paymentScreenshot || 'not provided',
+                        paymentScreenshotNumber: order.paymentScreenshotNumber || 'not provided',
                         date: order.date || new Date().toISOString()
                     };
                 }
@@ -108,8 +133,15 @@ class ShopApp {
 
     saveData() {
         try {
+            // Save to localStorage
             localStorage.setItem('products', JSON.stringify(this.products));
             localStorage.setItem('orders', JSON.stringify(this.orders));
+            
+            // Also save to sessionStorage as backup
+            sessionStorage.setItem('products_backup', JSON.stringify(this.products));
+            sessionStorage.setItem('orders_backup', JSON.stringify(this.orders));
+            
+            console.log('Data saved to localStorage and sessionStorage');
         } catch (error) {
             if (error.name === 'QuotaExceededError') {
                 this.showNotification('Storage quota exceeded. Please clear some products or use smaller images.', 'error');
@@ -118,6 +150,8 @@ class ShopApp {
                 try {
                     localStorage.setItem('products', JSON.stringify(this.products));
                     localStorage.setItem('orders', JSON.stringify(this.orders));
+                    sessionStorage.setItem('products_backup', JSON.stringify(this.products));
+                    sessionStorage.setItem('orders_backup', JSON.stringify(this.orders));
                 } catch (fallbackError) {
                     this.showNotification('Storage full. Please remove some products.', 'error');
                 }
