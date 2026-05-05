@@ -14,6 +14,7 @@ class ShopApp {
         this.isAdminLoggedIn = false;
         this.adminPassword = 'admin1234';
         this.productToDelete = null;
+        this.appVersion = '2.0'; // Version to force localStorage reset
         this.init();
     }
 
@@ -28,6 +29,17 @@ class ShopApp {
     }
 
     loadData() {
+        // Check app version and clear old data if version changed
+        const currentVersion = this.appVersion;
+        const savedVersion = localStorage.getItem('appVersion');
+        
+        if (savedVersion !== currentVersion) {
+            console.log('App version changed, clearing old data');
+            localStorage.clear();
+            sessionStorage.clear();
+            localStorage.setItem('appVersion', currentVersion);
+        }
+        
         const savedProducts = localStorage.getItem('products');
         const backupProducts = sessionStorage.getItem('products_backup');
         const savedOrders = localStorage.getItem('orders');
