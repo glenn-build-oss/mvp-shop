@@ -710,6 +710,9 @@ proceedToCheckout() {
         // Show media preview for current media
         const preview = document.getElementById('media-preview');
         if (product.media) {
+            // Show remove button for existing media
+            document.getElementById('remove-media-btn').classList.remove('hidden');
+            
             if (mediaType === 'image') {
                 preview.innerHTML = `
                     <img src="${product.media}" alt="Current" class="w-32 h-32 object-cover rounded-lg border">
@@ -721,6 +724,9 @@ proceedToCheckout() {
                     <p class="text-sm text-gray-600 mt-2">Current product video</p>
                 `;
             }
+        } else {
+            // Hide remove button if no media
+            document.getElementById('remove-media-btn').classList.add('hidden');
         }
 
         // Scroll to form
@@ -733,6 +739,9 @@ proceedToCheckout() {
         document.getElementById('editing-product-id').value = '';
         document.getElementById('image-preview').innerHTML = '';
         this.uploadedImageData = null;
+        
+        // Hide remove button
+        document.getElementById('remove-media-btn').classList.add('hidden');
 
         // Reset UI
         document.getElementById('form-title').textContent = 'Add New Product';
@@ -951,6 +960,24 @@ proceedToCheckout() {
         }
     }
 
+    removeMedia() {
+        // Clear uploaded media data
+        this.uploadedImageData = null;
+        this.uploadedVideoData = null;
+        
+        // Clear preview
+        document.getElementById('media-preview').innerHTML = '';
+        
+        // Hide remove button
+        document.getElementById('remove-media-btn').classList.add('hidden');
+        
+        // Clear file inputs
+        document.getElementById('product-image-file').value = '';
+        document.getElementById('product-video-file').value = '';
+        
+        this.showNotification('Media removed. You can upload a new image or leave blank for placeholder.', 'info');
+    }
+
     showImagePreview(imageSrc, productName) {
         const modal = document.getElementById('image-preview-modal');
         const previewImage = document.getElementById('preview-image');
@@ -1042,6 +1069,14 @@ function closeDeleteModal() {
         app.closeDeleteModal();
     } else {
         console.error('App not initialized for closeDeleteModal');
+    }
+}
+
+function removeMedia() {
+    if (app && app.removeMedia) {
+        app.removeMedia();
+    } else {
+        console.error('App not initialized for removeMedia');
     }
 }
 
