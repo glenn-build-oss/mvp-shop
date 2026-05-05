@@ -128,11 +128,14 @@ class ShopApp {
     clearLargeImages() {
         // Convert large base64 images to URLs to save space
         this.products = this.products.map(product => {
-            if (product.image && product.image.startsWith('data:image') && product.image.length > 50000) {
+            // Check both old image property and new media property
+            const imageSource = product.media || product.image;
+            if (imageSource && imageSource.startsWith('data:image') && imageSource.length > 50000) {
                 // Replace large images with placeholder URLs
                 return {
                     ...product,
-                    image: `https://picsum.photos/seed/${product.name.replace(/\s+/g, '')}/300/300.jpg`
+                    media: `https://picsum.photos/seed/${product.name.replace(/\s+/g, '')}/300/300.jpg`,
+                    mediaType: 'image'
                 };
             }
             return product;
@@ -437,9 +440,9 @@ proceedToCheckout() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    // Get user-selected size and quality options
-                    const maxSize = parseInt(document.getElementById('image-size-option').value);
-                    const quality = parseFloat(document.getElementById('image-quality-option').value);
+                    // Get user-selected size and quality options, but force smaller sizes for localStorage
+                    const maxSize = Math.min(parseInt(document.getElementById('image-size-option').value), 400); // Max 400px for storage
+                    const quality = Math.min(parseFloat(document.getElementById('image-quality-option').value), 0.7); // Max 70% quality
                     
                     console.log('Compressing image:', img.width, 'x', img.height, 'to max size:', maxSize, 'quality:', quality);
                     
