@@ -623,10 +623,19 @@ proceedToCheckout() {
             if (productIndex !== -1) {
                 const existingProduct = this.products[productIndex];
                 
-                // Preserve existing media if no new media is provided
-                if (!media) {
+                // Preserve existing media if no new media is uploaded
+                // Only use new media if there's actually new uploaded data
+                if (mediaType === 'image' && this.uploadedImageData) {
+                    media = this.uploadedImageData;
+                    console.log('Using newly uploaded image for edit');
+                } else if (mediaType === 'video' && this.uploadedVideoData) {
+                    media = this.uploadedVideoData;
+                    console.log('Using newly uploaded video for edit');
+                } else {
+                    // Keep existing media when just updating price/description
                     media = existingProduct.media;
                     mediaType = existingProduct.mediaType || 'image';
+                    console.log('Preserving existing media for edit:', mediaType);
                 }
                 
                 this.products[productIndex] = {
