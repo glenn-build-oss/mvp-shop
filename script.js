@@ -63,33 +63,9 @@ class ShopApp {
             });
             this.saveData();
         } else {
-            // Initialize with sample products
-            this.products = [
-                {
-                    id: 1,
-                    name: 'Premium Headphones',
-                    price: 89.99,
-                    description: 'High-quality wireless headphones with noise cancellation',
-                    media: 'https://picsum.photos/seed/headphones123/300/300.jpg',
-                    mediaType: 'image'
-                },
-                {
-                    id: 2,
-                    name: 'Smart Watch',
-                    price: 199.99,
-                    description: 'Feature-rich smartwatch with health tracking',
-                    media: 'https://picsum.photos/seed/watch456/300/300.jpg',
-                    mediaType: 'image'
-                },
-                {
-                    id: 3,
-                    name: 'Laptop Stand',
-                    price: 49.99,
-                    description: 'Adjustable aluminum laptop stand for better ergonomics',
-                    media: 'https://picsum.photos/seed/stand789/300/300.jpg',
-                    mediaType: 'image'
-                }
-            ];
+            // Start with empty products array - admin will add products
+            this.products = [];
+            console.log('Starting with empty shop - no sample products');
             this.saveData();
         }
         
