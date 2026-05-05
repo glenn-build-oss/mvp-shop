@@ -251,7 +251,7 @@ class ShopApp {
                 // Default to image for backward compatibility
                 const imageSrc = product.media || product.image || `https://picsum.photos/seed/default999/300/300.jpg`;
                 console.log('Rendering image for product:', product.name, 'Source type:', imageSrc.startsWith('data:') ? 'Base64' : 'URL', 'Length:', imageSrc.length);
-                mediaElement = `<img src="${imageSrc}" alt="${product.name}" class="w-full h-48 object-cover" onerror="this.src='https://picsum.photos/seed/error999/300/300.jpg'; console.log('Image failed to load:', '${imageSrc.substring(0, 50)}...');">`;
+                mediaElement = `<img src="${imageSrc}" alt="${product.name}" class="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition" onclick="app.showImagePreview('${imageSrc}', '${product.name}')" onerror="this.src='https://picsum.photos/seed/error999/300/300.jpg'; console.log('Image failed to load:', '${imageSrc.substring(0, 50)}...');">`;
             }
             
             card.innerHTML = `
@@ -784,7 +784,7 @@ proceedToCheckout() {
                 // Default to image for backward compatibility
                 const imageSrc = product.media || product.image || `https://picsum.photos/seed/admin999/300/300.jpg`;
                 console.log('Admin rendering image for product:', product.name, 'Source type:', imageSrc.startsWith('data:') ? 'Base64' : 'URL', 'Length:', imageSrc.length);
-                mediaElement = `<img src="${imageSrc}" alt="${product.name}" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://picsum.photos/seed/adminerror999/300/300.jpg'; console.log('Admin image failed to load:', '${imageSrc.substring(0, 50)}...');">`;
+                mediaElement = `<img src="${imageSrc}" alt="${product.name}" class="w-full h-32 object-cover rounded mb-3 cursor-pointer hover:opacity-90 transition" onclick="app.showImagePreview('${imageSrc}', '${product.name}')" onerror="this.src='https://picsum.photos/seed/adminerror999/300/300.jpg'; console.log('Admin image failed to load:', '${imageSrc.substring(0, 50)}...');">`;
             }
             
             const mediaTypeLabel = product.mediaType === 'video' ? '📹 Video' : '🖼️ Image';
@@ -942,6 +942,33 @@ proceedToCheckout() {
         }
     }
 
+    showImagePreview(imageSrc, productName) {
+        const modal = document.getElementById('image-preview-modal');
+        const previewImage = document.getElementById('preview-image');
+        const titleElement = document.getElementById('preview-image-title');
+        
+        previewImage.src = imageSrc;
+        titleElement.textContent = productName;
+        modal.classList.remove('hidden');
+        
+        // Add keyboard listener to close on Escape
+        document.addEventListener('keydown', this.handleEscapeKey);
+    }
+
+    closeImagePreview() {
+        const modal = document.getElementById('image-preview-modal');
+        modal.classList.add('hidden');
+        
+        // Remove keyboard listener
+        document.removeEventListener('keydown', this.handleEscapeKey);
+    }
+
+    handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            app.closeImagePreview();
+        }
+    }
+
     logout() {
         this.isAdminLoggedIn = false;
         this.showNotification('Logged out successfully!', 'info');
@@ -1006,6 +1033,14 @@ function closeDeleteModal() {
         app.closeDeleteModal();
     } else {
         console.error('App not initialized for closeDeleteModal');
+    }
+}
+
+function closeImagePreview() {
+    if (app && app.closeImagePreview) {
+        app.closeImagePreview();
+    } else {
+        console.error('App not initialized for closeImagePreview');
     }
 }
 

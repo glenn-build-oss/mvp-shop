@@ -74,6 +74,21 @@
         </div>
     </div>
 
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative max-w-6xl max-h-full">
+                <button onclick="closeImagePreview()" class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition z-10">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                <img id="preview-image" src="" alt="Product Image" class="max-w-full max-h-full object-contain rounded-lg">
+                <div class="absolute bottom-4 left-4 right-4 text-center text-white bg-black bg-opacity-50 rounded-lg p-2">
+                    <p id="preview-image-title" class="font-semibold"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
