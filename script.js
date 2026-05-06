@@ -16,6 +16,31 @@ class ShopApp {
         this.productToDelete = null;
         this.appVersion = '2.0'; // Version to force localStorage reset
         this.init();
+        
+        // Set up periodic data refresh for cross-device sync
+        setInterval(() => {
+            this.refreshDataIfNeeded();
+        }, 30000); // Check every 30 seconds
+    }
+
+    refreshDataIfNeeded() {
+        const timestampedData = localStorage.getItem('mvpShopData');
+        if (timestampedData) {
+            try {
+                const parsedData = JSON.parse(timestampedData);
+                const lastUpdated = new Date(parsedData.lastUpdated);
+                const now = new Date();
+                const minutesSinceUpdate = (now - lastUpdated) / (1000 * 60);
+                
+                // Refresh if data is older than 1 minute
+                if (minutesSinceUpdate > 1) {
+                    console.log('Refreshing data from server (older than 1 minute)');
+                    this.loadData();
+                }
+            } catch (error) {
+                console.error('Error checking data age:', error);
+            }
+        }
     }
 
     init() {
@@ -40,10 +65,36 @@ class ShopApp {
             localStorage.setItem('appVersion', currentVersion);
         }
         
+        // Try to load timestamped data first (for cross-device sync)
+        const timestampedData = localStorage.getItem('mvpShopData');
         const savedProducts = localStorage.getItem('products');
         const backupProducts = sessionStorage.getItem('products_backup');
         const savedOrders = localStorage.getItem('orders');
         const backupOrders = sessionStorage.getItem('orders_backup');
+        
+        if (timestampedData) {
+            try {
+                const parsedData = JSON.parse(timestampedData);
+                this.products = parsedData.products || [];
+                this.orders = parsedData.orders || [];
+                console.log('Loaded timestamped data from:', parsedData.lastUpdated);
+            } catch (error) {
+                console.error('Error parsing timestamped data:', error);
+                this.products = [];
+                this.orders = [];
+            }
+        } else if (savedProducts) {
+            this.products = JSON.parse(savedProducts);
+            console.log('Loaded products from localStorage');
+        } else if (backupProducts) {
+            this.products = JSON.parse(backupProducts);
+            console.log('Loaded products from sessionStorage backup');
+            // Restore to localStorage
+            localStorage.setItem('products', backupProducts);
+        } else {
+            console.log('No saved products found, using defaults');
+            this.products = [];
+        }
         
         if (savedProducts) {
             this.products = JSON.parse(savedProducts);
@@ -121,7 +172,15 @@ class ShopApp {
 
     saveData() {
         try {
-            // Save to localStorage
+            // Save to localStorage with timestamp for cross-device sync
+            const dataWithTimestamp = {
+                products: this.products,
+                orders: this.orders,
+                timestamp: Date.now(),
+                lastUpdated: new Date().toISOString()
+            };
+            
+            localStorage.setItem('mvpShopData', JSON.stringify(dataWithTimestamp));
             localStorage.setItem('products', JSON.stringify(this.products));
             localStorage.setItem('orders', JSON.stringify(this.orders));
             
@@ -129,13 +188,20 @@ class ShopApp {
             sessionStorage.setItem('products_backup', JSON.stringify(this.products));
             sessionStorage.setItem('orders_backup', JSON.stringify(this.orders));
             
-            console.log('Data saved to localStorage and sessionStorage');
+            console.log('Data saved with timestamp:', dataWithTimestamp.lastUpdated);
         } catch (error) {
             if (error.name === 'QuotaExceededError') {
                 this.showNotification('Storage quota exceeded. Please clear some products or use smaller images.', 'error');
                 // Fallback: keep only essential data
                 this.clearLargeImages();
                 try {
+                    const dataWithTimestamp = {
+                        products: this.products,
+                        orders: this.orders,
+                        timestamp: Date.now(),
+                        lastUpdated: new Date().toISOString()
+                    };
+                    localStorage.setItem('mvpShopData', JSON.stringify(dataWithTimestamp));
                     localStorage.setItem('products', JSON.stringify(this.products));
                     localStorage.setItem('orders', JSON.stringify(this.orders));
                     sessionStorage.setItem('products_backup', JSON.stringify(this.products));
